@@ -102,6 +102,9 @@ PHP 8.4 INTERNALS UPGRADE NOTES
 * Removed IS_STATIC_VAR_UNINITIALIZED constant. Check for IS_NULL in the
   static_variables array instead.
 
+* Removed ZEND_DIM_ALTERNATIVE_SYNTAX constant. This syntax no longer has a
+  specialized error message.
+
 ========================
 2. Build system changes
 ========================
@@ -189,6 +192,8 @@ PHP 8.4 INTERNALS UPGRADE NOTES
    - Added pkg-config support to find GNU MP library. As a fallback default
      system paths are searched. When a directory argument is provided
      (--with-gmp=DIR), it will be used instead of the pkg-config.
+   - Added optional pkg-config support to find NET-SNMP library. As a fallback
+     net-snmp-config utility is used like before.
    - Removed BC enable_pear variable check due to --enable-pear configure option
      once used (use with_pear variable name).
    - Cache variables synced to php_cv_* naming scheme. If you use them for

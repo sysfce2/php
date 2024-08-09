@@ -9,10 +9,15 @@ PHP                                                                        NEWS
   . Fixed bug GH-15140 (Missing variance check for abstract set with asymmetric
     type). (ilutov)
   . Fixed bug GH-15181 (Disabled output handler is flushed again). (cmb)
+  . Passing E_USER_ERROR to trigger_error() is now deprecated. (Girgias)
+  . Fixed bug GH-15292 (Dynamic AVX detection is broken for MSVC). (nielsdos)
 
 - Date:
   . Constants SUNFUNCS_RET_TIMESTAMP, SUNFUNCS_RET_STRING, and SUNFUNCS_RET_DOUBLE
     are now deprecated. (Jorg Sowa)
+
+- DBA:
+  . Passing null or false to dba_key_split() is deprecated. (Grigias)
 
 - DOM:
   . Fixed bug GH-15192 (Segmentation fault in dom extension
@@ -23,6 +28,8 @@ PHP                                                                        NEWS
 - Hash:
   . Deprecated passing incorrect data types for options to ext/hash functions.
     (nielsdos)
+  . Added SSE2 and SHA-NI implementation of SHA-256. (timwolla, Colin Percival,
+    Graham Percival)
 
 - PHPDBG:
   . array out of bounds, stack overflow handled for segfault handler on windows.
@@ -38,12 +45,28 @@ PHP                                                                        NEWS
   . INI settings session.sid_length and session.sid_bits_per_character are now
     deprecated. (timwolla)
 
+- SOAP:
+  . Passing an int to SoapServer::addFunction() is now deprecated.
+    If all PHP functions need to be provided flatten the array returned by
+    get_defined_functions(). (Girgias)
+  . The SOAP_FUNCTIONS_ALL constant is now deprecated. (Girgias)
+
+- SPL:
+  . The SplFixedArray::__wakeup() method has been deprecated as it implements
+    __serialize() and __unserialize() which need to be overwritten instead.
+    (TysonAndre)
+
 - Standard:
   . Unserializing the uppercase 'S' tag is now deprecated. (timwolla)
 
 - Streams:
   . Implemented GH-15155 (Stream context is lost when custom stream wrapper is
     being filtered). (Quentin Dreyer)
+
+- XML:
+  . The xml_set_object() function has been deprecated. (Girgias)
+  . Passing non-callable strings to the xml_set_*_handler() functions is now
+    deprecated. (Girgias)
 
 01 Aug 2024, PHP 8.4.0alpha4
 
