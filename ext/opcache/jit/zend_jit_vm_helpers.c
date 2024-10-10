@@ -210,6 +210,15 @@ void ZEND_FASTCALL zend_jit_undefined_long_key(EXECUTE_DATA_D)
 	ZVAL_NULL(result);
 }
 
+void ZEND_FASTCALL zend_jit_undefined_long_key_ex(zend_long key EXECUTE_DATA_DC)
+{
+	const zend_op *opline = EX(opline);
+	zval *result = EX_VAR(opline->result.var);
+
+	zend_error(E_WARNING, "Undefined array key " ZEND_LONG_FMT, key);
+	ZVAL_NULL(result);
+}
+
 void ZEND_FASTCALL zend_jit_undefined_string_key(EXECUTE_DATA_D)
 {
 	const zend_op *opline = EX(opline);
@@ -512,16 +521,17 @@ static int zend_jit_trace_record_fake_init_call_ex(zend_execute_data *call, zend
 		 && (func->op_array.fn_flags & (ZEND_ACC_CLOSURE|ZEND_ACC_FAKE_CLOSURE))) {
 			return -1;
 		}
-		if (func->type == ZEND_USER_FUNCTION
-		 && (func->op_array.fn_flags & ZEND_ACC_CLOSURE)) {
+		if (func->type == ZEND_USER_FUNCTION) {
 			jit_extension =
 				(zend_jit_op_array_trace_extension*)ZEND_FUNC_INFO(&func->op_array);
-			if (UNEXPECTED(!jit_extension
-			 || !(jit_extension->func_info.flags & ZEND_FUNC_JIT_ON_HOT_TRACE)
-			 || (func->op_array.fn_flags & ZEND_ACC_FAKE_CLOSURE))) {
+            if (UNEXPECTED(!jit_extension && (func->op_array.fn_flags & ZEND_ACC_CLOSURE))
+			 || (jit_extension && !(jit_extension->func_info.flags & ZEND_FUNC_JIT_ON_HOT_TRACE))
+			 || (func->op_array.fn_flags & ZEND_ACC_FAKE_CLOSURE)) {
 				return -1;
 			}
-			func = (zend_function*)jit_extension->op_array;
+			if (func->op_array.fn_flags & ZEND_ACC_CLOSURE) {
+				func = (zend_function*)jit_extension->op_array;
+			}
 		}
 		if (is_megamorphic == ZEND_JIT_EXIT_POLYMORPHISM
 		 /* TODO: use more accurate check ??? */
@@ -565,7 +575,7 @@ static int zend_jit_trace_subtrace(zend_jit_trace_rec *trace_buffer, int start, 
  * +--------+----------+----------+----------++----------+----------+----------+
  * | RETURN |INNER_LOOP|          |  rec-ret ||   LINK   |          |   LINK   |
  * +--------+----------+----------+----------++----------+----------+----------+
- * | SIDE   |  unroll  |          |  return  ||   LINK   |   LINK   |   LINK   |
+ * | SIDE   |  unroll  |          | side-ret ||   LINK   |   LINK   |   LINK   |
  * +--------+----------+----------+----------++----------+----------+----------+
  *
  * loop:       LOOP if "cycle" and level == 0, otherwise INNER_LOOP
@@ -576,10 +586,16 @@ static int zend_jit_trace_subtrace(zend_jit_trace_rec *trace_buffer, int start, 
  * loop-ret:   LOOP_EXIT if level == 0, otherwise continue (wait for loop)
  * return:     RETURN if level == 0
  * rec_ret:    RECURSIVE_RET if "cycle" and ret_level > N, otherwise continue
+ * side_ret:   RETURN if level == 0 && ret_level == ret_depth, otherwise continue
  *
  */
 
-zend_jit_trace_stop ZEND_FASTCALL zend_jit_trace_execute(zend_execute_data *ex, const zend_op *op, zend_jit_trace_rec *trace_buffer, uint8_t start, uint32_t is_megamorphic)
+zend_jit_trace_stop ZEND_FASTCALL zend_jit_trace_execute(zend_execute_data  *ex,
+                                                         const zend_op      *op,
+                                                         zend_jit_trace_rec *trace_buffer,
+                                                         uint8_t             start,
+                                                         uint32_t            is_megamorphic,
+                                                         int                 ret_depth)
 
 {
 #ifdef HAVE_GCC_GLOBAL_REGS
@@ -1050,6 +1066,20 @@ zend_jit_trace_stop ZEND_FASTCALL zend_jit_trace_execute(zend_execute_data *ex, 
 							ZEND_JIT_TRACE_STOP_RECURSION_EXIT) {
 						stop = ZEND_JIT_TRACE_STOP_RECURSION_EXIT;
 						break;
+					} else if ((start & ZEND_JIT_TRACE_START_SIDE)
+					 && ret_level < ret_depth) {
+						TRACE_RECORD(ZEND_JIT_TRACE_BACK, 0, op_array);
+						ret_level++;
+						last_loop_opline = NULL;
+
+						if (prev_call) {
+							int ret = zend_jit_trace_record_fake_init_call(prev_call, trace_buffer, idx, 0);
+							if (ret < 0) {
+								stop = ZEND_JIT_TRACE_STOP_BAD_FUNC;
+								break;
+							}
+							idx = ret;
+						}
 					} else {
 						stop = ZEND_JIT_TRACE_STOP_RETURN;
 						break;
@@ -1091,17 +1121,18 @@ zend_jit_trace_stop ZEND_FASTCALL zend_jit_trace_execute(zend_execute_data *ex, 
 					stop = ZEND_JIT_TRACE_STOP_BAD_FUNC;
 					break;
 				}
-				if (func->type == ZEND_USER_FUNCTION
-				 && (func->op_array.fn_flags & ZEND_ACC_CLOSURE)) {
+				if (func->type == ZEND_USER_FUNCTION) {
 					jit_extension =
 						(zend_jit_op_array_trace_extension*)ZEND_FUNC_INFO(&func->op_array);
-					if (UNEXPECTED(!jit_extension)
-					 || !(jit_extension->func_info.flags & ZEND_FUNC_JIT_ON_HOT_TRACE)
+					if (UNEXPECTED(!jit_extension && (func->op_array.fn_flags & ZEND_ACC_CLOSURE))
+					 || (jit_extension && !(jit_extension->func_info.flags & ZEND_FUNC_JIT_ON_HOT_TRACE))
 					 || (func->op_array.fn_flags & ZEND_ACC_FAKE_CLOSURE)) {
 						stop = ZEND_JIT_TRACE_STOP_INTERPRETER;
 						break;
 					}
-					func = (zend_function*)jit_extension->op_array;
+					if (func->op_array.fn_flags & ZEND_ACC_CLOSURE) {
+						func = (zend_function*)jit_extension->op_array;
+					}
 				}
 
 #ifndef HAVE_GCC_GLOBAL_REGS
