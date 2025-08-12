@@ -9,6 +9,18 @@ PHP                                                                        NEWS
     been deprecated, as it no longer has any effect since PHP 8.0. (Girgias)
   . Terminating case statements with a semicolon instead of a colon has
     been deprecated. (theodorejb)
+  . The backtick operator as an alias for shell_exec() has been deprecated.
+    (timwolla)
+  . Returning null from __debugInfo() has been deprecated. (DanielEScherzer)
+  . Support #[\Override] on properties. (Jiří Pudil)
+
+- Curl:
+  . The curl_close() function has been deprecated. (DanielEScherzer)
+  . The curl_share_close() function has been deprecated. (DanielEScherzer)
+
+- Date:
+  . The DATE_RFC7231 and DateTimeInterface::RFC7231 constants have been
+    deprecated. (jorgsowa)
 
 - DOM:
   . Fixed bug GH-18877 (\Dom\HTMLDocument querySelectorAll selecting only the
@@ -18,6 +30,9 @@ PHP                                                                        NEWS
   . The finfo_close() function has been deprecated. (timwolla)
   . The $context parameter of the finfo_buffer() function has been deprecated
     as it is ignored. (Girgias)
+
+- GD:
+  . The imagedestroy() function has been deprecated. (DanielEScherzer)
 
 - Intl:
   . Intl's internal error mechanism has been modernized so that it
@@ -38,6 +53,8 @@ PHP                                                                        NEWS
     (Jakub Zelenka)
   . Implement #47728 (openssl_pkcs7_sign ignores new openssl flags).
     (Jakub Zelenka)
+  . Implement #81724 (openssl_cms_encrypt only allows specific ciphers).
+    (Jakub Zelenka)
 
 - PDO:
   . The "uri:" DSN scheme has been deprecated due to security concerns with
@@ -48,6 +65,10 @@ PHP                                                                        NEWS
     `_property_string()`). (DanielEScherzer)
   . The setAccessible() methods of various Reflection objects have been
     deprecated, as those no longer have an effect. (timwolla)
+  . ReflectionClass::getConstant() for constants that do not exist has been
+    deprecated. (DanielEScherzer)
+  . ReflectionProperty::getDefaultValue() for properties without default values
+    has been deprecated. (DanielEScherzer)
 
 - SPL:
   . Unregistering all autoloaders by passing the spl_autoload_call() function
@@ -66,6 +87,9 @@ PHP                                                                        NEWS
     opened directory has been deprecated. (Girgias)
   . Fixed bug GH-19153 (#[\Attribute] validation should error on
     trait/interface/enum/abstract class). (DanielEScherzer)
+
+- XML:
+  . The xml_parser_free() function has been deprecated. (DanielEScherzer)
 
 31 Jul 2025, PHP 8.5.0alpha4
 

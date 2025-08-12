@@ -4855,6 +4855,11 @@ ZEND_METHOD(ReflectionClass, getConstant)
 		}
 	} ZEND_HASH_FOREACH_END();
 	if ((c = zend_hash_find_ptr(constants_table, name)) == NULL) {
+		zend_error(
+			E_DEPRECATED,
+			"ReflectionClass::getConstant() for a non-existent constant is deprecated, "
+				"use ReflectionClass::hasConstant() to check if the constant exists"
+		);
 		RETURN_FALSE;
 	}
 	ZVAL_COPY_OR_DUP(return_value, &c->value);
@@ -6509,11 +6514,22 @@ ZEND_METHOD(ReflectionProperty, getDefaultValue)
 	prop_info = ref->prop;
 
 	if (prop_info == NULL) {
-		return; // throw exception?
+		// Dynamic property
+		zend_error(
+			E_DEPRECATED,
+			"ReflectionProperty::getDefaultValue() for a property without a default value is deprecated, "
+				"use ReflectionProperty::hasDefaultValue() to check if the default value exists"
+		);
+		return;
 	}
 
 	prop = property_get_default(prop_info);
 	if (!prop || Z_ISUNDEF_P(prop)) {
+		zend_error(
+			E_DEPRECATED,
+			"ReflectionProperty::getDefaultValue() for a property without a default value is deprecated, "
+				"use ReflectionProperty::hasDefaultValue() to check if the default value exists"
+		);
 		return;
 	}
 

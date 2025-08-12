@@ -178,6 +178,8 @@ PHP 8.5 UPGRADE NOTES
     RFC: https://wiki.php.net/rfc/pipe-operator-v3
   . Constructor property promotion can now be used for final properties.
     RFC: https://wiki.php.net/rfc/final_promotion
+  . #[\Override] can now be applied to properties.
+    RFC: https://wiki.php.net/rfc/override_properties
 
 - Curl:
   . Added support for share handles that are persisted across multiple PHP
@@ -328,6 +330,25 @@ PHP 8.5 UPGRADE NOTES
   . Terminating case statements with a semicolon instead of a colon has
     been deprecated.
     RFC: https://wiki.php.net/rfc/deprecations_php_8_5#deprecate_semicolon_after_case_in_switch_statement
+  . The backtick operator as an alias for shell_exec() has been deprecated.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_5#deprecate_backticks_as_an_alias_for_shell_exec
+  . Returning null from __debugInfo() has been deprecated.
+    Return an empty array instead.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_5#deprecate_debuginfo_returning_null
+
+- Curl:
+  . The curl_close() function has been deprecated, as CurlHandle objects are
+    freed automatically.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_5#deprecate_curl_close
+  . The curl_share_close() function has been deprecated, as CurlShareHandle
+    objects are freed automatically.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_5#deprecate_curl_share_close
+
+- Date:
+  . The DATE_RFC7231 and DateTimeInterface::RFC7231 constants have been
+    deprecated. This is because the associated timezone is ignored and always
+    uses GMT.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_5#deprecate_date_rfc7231_and_datetimeinterfacerfc7231
 
 - FileInfo:
   . The finfo_close() function has been deprecated.
@@ -336,6 +357,11 @@ PHP 8.5 UPGRADE NOTES
   . The $context parameter of the finfo_buffer() function has been deprecated
     as it is ignored.
     RFC: https://wiki.php.net/rfc/deprecations_php_8_5#deprecate_the_context_parameter_for_finfo_buffer
+
+- GD:
+  . The imagedestroy() function has been deprecated, as GdImage objects are
+    freed automatically.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_5#deprecate_imagedestroy
 
 - Hash:
   . The MHASH_* constants have been deprecated.  These have been overlooked
@@ -364,11 +390,16 @@ PHP 8.5 UPGRADE NOTES
     DSNs coming from remote URIs.
     RFC: https://wiki.php.net/rfc/deprecations_php_8_5#deprecate_pdo_s_urischeme
 
-
 - Reflection:
   . The setAccessible() methods of various Reflection objects have been
     deprecated, as those no longer have an effect.
     RFC: https://wiki.php.net/rfc/deprecations_php_8_5#deprecate_reflectionsetaccessible
+  . Calling ReflectionClass::getConstant() for constants that do not exist has
+    been deprecated.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_5#deprecate_reflectionclassgetconstant_for_missing_constants
+  . Calling ReflectionProperty::getDefaultValue() for properties without default
+    values has been deprecated.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_5#deprecate_reflectionpropertygetdefaultvalue_for_properties_without_default_values
 
 - SPL:
   . Unregistering all autoloaders by passing the spl_autoload_call() function
@@ -390,6 +421,11 @@ PHP 8.5 UPGRADE NOTES
     opened directory has been deprecated. Provide the last opened directory
     explicitly instead.
     RFC: https://wiki.php.net/rfc/deprecations_php_8_5#deprecate_passing_null_to_readdir_rewinddir_and_closedir
+
+- XML:
+  . The xml_parser_free() function has been deprecated, as XMLParser objects
+    are freed automatically.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_5#deprecate_xml_parser_free
 
 ========================================
 5. Changed Functions
@@ -420,6 +456,9 @@ PHP 8.5 UPGRADE NOTES
     $digest_algo that allows specifying hash digest algorithm for OEAP padding.
   . openssl_sign() and openssl_verify() have new parameter $padding to allow
     using more secure RSA PSS padding.
+  . openssl_cms_encrypt() $cipher_algo parameter can be a string with the
+    cipher name. That allows to use more algorithms including AES GCM cipher
+    algorithms for auth enveloped data.
 
 - PCNTL:
   . pcntl_exec() now has a formal return type of false.
